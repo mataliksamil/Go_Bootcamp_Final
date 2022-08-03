@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/go-pg/pg/v9"
+	controllers "github.com/mataliksamil/Go_Bootcamp_Final/controllers"
 )
 
 // Connecting to db
@@ -12,7 +13,7 @@ func Connect() *pg.DB {
 	opts := &pg.Options{
 		User:     "postgres",
 		Password: "123456",
-		Addr:     "localhost:8080",
+		Addr:     "localhost:5432",
 		Database: "gobootcamp",
 	}
 	var db *pg.DB = pg.Connect(opts)
@@ -21,5 +22,9 @@ func Connect() *pg.DB {
 		os.Exit(100)
 	}
 	log.Printf("Connected to db")
+
+	controllers.CreateUserTable(db)
+	controllers.InitiateDB(db)
+
 	return db
 }
