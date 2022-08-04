@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	pg "github.com/go-pg/pg/v9"
-	orm "github.com/go-pg/pg/v9/orm"
+	pg "github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 	guuid "github.com/google/uuid"
 )
 
@@ -28,7 +28,7 @@ func CreateProductTable(db *pg.DB) error {
 		IfNotExists: true,
 	}
 
-	createError := db.CreateTable(&Product{}, opts)
+	createError := db.Model(Product{}).CreateTable(opts)
 	if createError != nil {
 		log.Printf("Error while creating Product table, Reason: %v\n", createError)
 		return createError
@@ -65,8 +65,7 @@ func CreateProduct(c *gin.Context) {
 	product_stock := product.Product_Stock
 	price := product.Price
 	vat_rate := product.Vat_Rate
-
-	insertError := dbConnect.Insert(&Product{
+	_, insertError := dbConnect.Model(&Product{
 		Product_ID:    product_id,
 		Product_Name:  product_name,
 		Product_Stock: product_stock,
@@ -74,7 +73,16 @@ func CreateProduct(c *gin.Context) {
 		Vat_Rate:      vat_rate,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
-	})
+	}).Insert()
+	/* insertError := dbConnect.Insert(&Product{
+		Product_ID:    product_id,
+		Product_Name:  product_name,
+		Product_Stock: product_stock,
+		Price:         price,
+		Vat_Rate:      vat_rate,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}) */
 	if insertError != nil {
 		log.Printf("Error while inserting new Product into db, Reason: %v\n", insertError)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -93,7 +101,8 @@ func CreateProduct(c *gin.Context) {
 func GetSingleProduct(c *gin.Context) {
 	product_id := c.Param("product_id")
 	product := &Product{Product_ID: product_id}
-	err := dbConnect.Select(product)
+
+	err := dbConnect.Model(product).WherePK().Select()
 	if err != nil {
 		log.Printf("Error while getting a single todo, Reason: %v\n", err)
 		c.JSON(http.StatusNotFound, gin.H{
@@ -134,7 +143,8 @@ func EditProductStock(c *gin.Context) {
 func DeleteProduct(c *gin.Context) {
 	product_id := c.Param("product_id")
 	product := &Product{Product_ID: product_id}
-	err := dbConnect.Delete(product)
+	_, err := dbConnect.Model(product).WherePK().Delete()
+	//err := dbConnect.Delete(product)
 	if err != nil {
 		log.Printf("Error while deleting a product, Reason: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	pg "github.com/go-pg/pg/v9"
-	orm "github.com/go-pg/pg/v9/orm"
+	pg "github.com/go-pg/pg/v10"
+	orm "github.com/go-pg/pg/v10/orm"
 	guuid "github.com/google/uuid"
 )
 
@@ -25,8 +25,9 @@ func CreateUserTable(db *pg.DB) error {
 	opts := &orm.CreateTableOptions{
 		IfNotExists: true,
 	}
+	createError := db.Model(Product{}).CreateTable(opts)
 
-	createError := db.CreateTable(&User{}, opts)
+	//createError := db.CreateTable(&User{}, opts)
 	if createError != nil {
 		log.Printf("Error while creating User table, Reason: %v\n", createError)
 		return createError
@@ -62,16 +63,24 @@ func CreateUser(c *gin.Context) {
 	last_name := user.LastName
 	address := user.Address
 	id := guuid.New().String()
-
-	insertError := dbConnect.Insert(&User{
+	_, insertError := dbConnect.Model(&User{
 		ID:        id,
 		Name:      name,
 		LastName:  last_name,
 		Address:   address,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-	})
-	if insertError != nil {
+	}).Insert()
+	/*
+		insertError := dbConnect.Insert(&User{
+			ID:        id,
+			Name:      name,
+			LastName:  last_name,
+			Address:   address,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		})
+	*/if insertError != nil {
 		log.Printf("Error while inserting new user into db, Reason: %v\n", insertError)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
@@ -89,7 +98,8 @@ func CreateUser(c *gin.Context) {
 func GetSingleUser(c *gin.Context) {
 	userId := c.Param("userId")
 	user := &User{ID: userId}
-	err := dbConnect.Select(user)
+	err := dbConnect.Model(user).WherePK().Select()
+	//err := dbConnect.Select(user)
 	if err != nil {
 		log.Printf("Error while getting a single todo, Reason: %v\n", err)
 		c.JSON(http.StatusNotFound, gin.H{
@@ -130,7 +140,8 @@ func EditUser(c *gin.Context) {
 func DeleteUser(c *gin.Context) {
 	userId := c.Param("userId")
 	user := &User{ID: userId}
-	err := dbConnect.Delete(user)
+	_, err := dbConnect.Model(user).WherePK().Delete()
+	//err := dbConnect.Delete(user)
 	if err != nil {
 		log.Printf("Error while deleting a single user, Reason: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
