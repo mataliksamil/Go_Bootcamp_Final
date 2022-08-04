@@ -14,6 +14,13 @@ func Routes(router *gin.Engine) {
 	router.GET("/user/:userId", controllers.GetSingleUser)
 	router.PUT("/user/:userId", controllers.EditUser)
 	router.DELETE("/user/:userId", controllers.DeleteUser)
+
+	router.GET("/product", controllers.GetAllProducts)
+	router.POST("/product", controllers.CreateProduct)
+	router.GET("/product/:product_id", controllers.GetSingleProduct)
+	router.PUT("/product/:product_id", controllers.EditProductStock)
+	router.DELETE("/product/:product_id", controllers.DeleteProduct)
+
 }
 func welcome(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{

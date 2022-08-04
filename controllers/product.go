@@ -11,36 +11,38 @@ import (
 	guuid "github.com/google/uuid"
 )
 
-type User struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	LastName  string    `json:"last_name"`
-	Address   string    `json:"address"`
+type Product struct {
+	Product_ID    string  `json:"product_id"`
+	Product_Name  string  `json:"product_name"`
+	Product_Stock int     `json:"product_stock"`
+	Price         float64 `json:"price"`
+	Vat_Rate      int     `json:"vat_rate"`
+
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// Create User Table
-func CreateUserTable(db *pg.DB) error {
+// Create Product Table
+func CreateProductTable(db *pg.DB) error {
 	opts := &orm.CreateTableOptions{
 		IfNotExists: true,
 	}
 
-	createError := db.CreateTable(&User{}, opts)
+	createError := db.CreateTable(&Product{}, opts)
 	if createError != nil {
-		log.Printf("Error while creating User table, Reason: %v\n", createError)
+		log.Printf("Error while creating Product table, Reason: %v\n", createError)
 		return createError
 	}
-	log.Printf("User table created")
+	log.Printf("Product table created")
 	return nil
 }
 
-func GetAllUsers(c *gin.Context) {
-	var users []User
+func GetAllProducts(c *gin.Context) {
+	var products []Product
 
-	err := dbConnect.Model(&users).Select()
+	err := dbConnect.Model(&products).Select()
 	if err != nil {
-		log.Printf("Error while getting all users, Reason: %v\n", err)
+		log.Printf("Error while getting all products, Reason: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "Something went wrong",
@@ -50,29 +52,31 @@ func GetAllUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
 		"message": "All Users",
-		"data":    users,
+		"data":    products,
 	})
 
 }
 
-func CreateUser(c *gin.Context) {
-	var user User
-	c.BindJSON(&user)
-	name := user.Name
-	last_name := user.LastName
-	address := user.Address
-	id := guuid.New().String()
+func CreateProduct(c *gin.Context) {
+	var product Product
+	c.BindJSON(&product)
+	product_name := product.Product_Name
+	product_id := guuid.New().String()
+	product_stock := product.Product_Stock
+	price := product.Price
+	vat_rate := product.Vat_Rate
 
-	insertError := dbConnect.Insert(&User{
-		ID:        id,
-		Name:      name,
-		LastName:  last_name,
-		Address:   address,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+	insertError := dbConnect.Insert(&Product{
+		Product_ID:    product_id,
+		Product_Name:  product_name,
+		Product_Stock: product_stock,
+		Price:         price,
+		Vat_Rate:      vat_rate,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	})
 	if insertError != nil {
-		log.Printf("Error while inserting new user into db, Reason: %v\n", insertError)
+		log.Printf("Error while inserting new Product into db, Reason: %v\n", insertError)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "Something went wrong",
@@ -81,15 +85,15 @@ func CreateUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  http.StatusCreated,
-		"message": "User created Successfully",
+		"message": "Product created Successfully",
 	})
 
 }
 
-func GetSingleUser(c *gin.Context) {
-	userId := c.Param("userId")
-	user := &User{ID: userId}
-	err := dbConnect.Select(user)
+func GetSingleProduct(c *gin.Context) {
+	product_id := c.Param("product_id")
+	product := &Product{Product_ID: product_id}
+	err := dbConnect.Select(product)
 	if err != nil {
 		log.Printf("Error while getting a single todo, Reason: %v\n", err)
 		c.JSON(http.StatusNotFound, gin.H{
@@ -100,18 +104,18 @@ func GetSingleUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
-		"message": "Single User",
-		"data":    user,
+		"message": "Single Product",
+		"data":    product,
 	})
 
 }
 
-func EditUser(c *gin.Context) {
-	userId := c.Param("userId")
-	var user User
-	c.BindJSON(&user)
-	address := user.Address
-	_, err := dbConnect.Model(&User{}).Set("address = ?", address).Where("id = ?", userId).Update()
+func EditProductStock(c *gin.Context) {
+	product_id := c.Param("product_id")
+	var product Product
+	c.BindJSON(&product)
+	product_stock := product.Product_Stock
+	_, err := dbConnect.Model(&Product{}).Set("product_stock = ?", product_stock).Where("id = ?", product_id).Update()
 	if err != nil {
 		log.Printf("Error, Reason: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -122,17 +126,17 @@ func EditUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"status":  200,
-		"message": "User Address Edited Successfully",
+		"message": "Product Stock Edited Successfully",
 	})
 
 }
 
-func DeleteUser(c *gin.Context) {
-	userId := c.Param("userId")
-	user := &User{ID: userId}
-	err := dbConnect.Delete(user)
+func DeleteProduct(c *gin.Context) {
+	product_id := c.Param("product_id")
+	product := &Product{Product_ID: product_id}
+	err := dbConnect.Delete(product)
 	if err != nil {
-		log.Printf("Error while deleting a single user, Reason: %v\n", err)
+		log.Printf("Error while deleting a product, Reason: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "Something went wrong",
@@ -141,7 +145,7 @@ func DeleteUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
-		"message": "User deleted successfully",
+		"message": "Product deleted successfully",
 	})
 
 }
