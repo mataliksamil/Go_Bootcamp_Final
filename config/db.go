@@ -5,7 +5,7 @@ import (
 	"os"
 
 	pg "github.com/go-pg/pg/v10"
-	controllers "github.com/mataliksamil/Go_Bootcamp_Final/controllers"
+	"github.com/mataliksamil/Go_Bootcamp_Final/controllers"
 )
 
 // Connecting to db
@@ -14,7 +14,7 @@ func Connect() *pg.DB {
 		User:     "postgres",
 		Password: "123456",
 		Addr:     "localhost:5432",
-		Database: "gobootcamp",
+		Database: "go_database",
 	}
 	var db *pg.DB = pg.Connect(opts)
 	if db == nil {
@@ -22,10 +22,17 @@ func Connect() *pg.DB {
 		os.Exit(100)
 	}
 	log.Printf("Connected to db")
-	controllers.CreateUserTable(db)
-	//users.CreateUserTable(db)
-	controllers.CreateProductTable(db)
 
+	/* 	err := controllers.CreateSchema(db)
+	   	if err != nil {
+	   		panic(err)
+	   	}
+	   	log.Printf("Schema created") */
+
+	//controllers.CreateUserTable(db)
+	controllers.CreateProductTable(db)
+	controllers.CreateBasketTable(db)
+	controllers.CreateBasketProductTable(db)
 	controllers.InitiateDB(db)
 
 	return db

@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	pg "github.com/go-pg/pg/v10"
-	orm "github.com/go-pg/pg/v10/orm"
+	"github.com/go-pg/pg/v10/orm"
 	guuid "github.com/google/uuid"
 )
 
@@ -25,7 +25,7 @@ func CreateUserTable(db *pg.DB) error {
 	opts := &orm.CreateTableOptions{
 		IfNotExists: true,
 	}
-	createError := db.Model(Product{}).CreateTable(opts)
+	createError := db.Model(&User{}).CreateTable(opts)
 
 	//createError := db.CreateTable(&User{}, opts)
 	if createError != nil {
@@ -71,16 +71,8 @@ func CreateUser(c *gin.Context) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}).Insert()
-	/*
-		insertError := dbConnect.Insert(&User{
-			ID:        id,
-			Name:      name,
-			LastName:  last_name,
-			Address:   address,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		})
-	*/if insertError != nil {
+
+	if insertError != nil {
 		log.Printf("Error while inserting new user into db, Reason: %v\n", insertError)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
@@ -108,12 +100,6 @@ func GetSingleUser(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"status":  http.StatusOK,
-		"message": "Single User",
-		"data":    user,
-	})
-
 }
 
 func EditUser(c *gin.Context) {
@@ -156,21 +142,3 @@ func DeleteUser(c *gin.Context) {
 	})
 
 }
-
-/* func createNewPartition(db *pg.DB, currentTime time.Time) error {
-	firstOfMonth := time.Date(currentTime.Year(), currentTime.Month(), 1, 0, 0, 0, 0, time.UTC)
-	firstOfNextMonth := firstOfMonth.AddDate(0, 1, 0)
-
-	year := firstOfMonth.Format("2006")
-	month := firstOfMonth.Format("01")
-	sql := fmt.Sprintf(
-		`CREATE TABLE IF NOT EXISTS logs_y%s_m%s PARTITION OF logs FOR VALUES FROM ('%s') TO ('%s');`,
-		year, month,
-		firstOfMonth.Format(time.RFC3339Nano),
-		firstOfNextMonth.Format(time.RFC3339Nano),
-	)
-
-	_, err := db.Exec(sql)
-	return err
-}
-*/
