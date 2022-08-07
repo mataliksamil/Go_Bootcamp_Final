@@ -92,7 +92,7 @@ func GetSingleBasket(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
-		"message": "Single Baskeet",
+		"message": "Single Basket",
 		"data":    basket,
 	})
 }

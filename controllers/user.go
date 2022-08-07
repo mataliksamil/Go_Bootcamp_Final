@@ -147,20 +147,42 @@ func GetUsersAllBaskets(c *gin.Context) {
 	user := &User{ID: userId}
 
 	err := dbConnect.Model(user).Relation("Baskets").Relation("Baskets.BasketProducts").Relation("Baskets.BasketProducts.Product").WherePK().Select()
-
 	//basket.BasketProducts[].Product
-
 	if err != nil {
-		log.Printf("Error while getting a single basket, Reason: %v\n", err)
+		log.Printf("Error while getting a user baskets, Reason: %v\n", err)
 		c.JSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
-			"message": "Basket not found",
+			"message": "Baskets not found",
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"status":  http.StatusOK,
-		"message": "Single Baskeet",
-		"data":    user,
-	})
+
+}
+
+func GetUsersActiveBasket(c *gin.Context) {
+
+	userId := c.Param("userId")
+	user := &User{ID: userId}
+
+	err := dbConnect.Model(user).Relation("Baskets").Relation("Baskets.BasketProducts").Relation("Baskets.BasketProducts.Product").WherePK().Select()
+	//basket.BasketProducts[].Product
+	if err != nil {
+		log.Printf("Error while getting a user baskets, Reason: %v\n", err)
+		c.JSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusNotFound,
+			"message": "Baskets not found",
+		})
+		return
+	}
+
+	nameString := "Active basket of :" + user.Name
+	for _, b := range user.Baskets {
+		if b.BasketStatus == 1 {
+			c.JSON(http.StatusOK, gin.H{
+				"status":  http.StatusOK,
+				"message": nameString,
+				"data":    b,
+			})
+		}
+	}
 }

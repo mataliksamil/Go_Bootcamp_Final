@@ -34,7 +34,6 @@ func Connect() *pg.DB {
 	controllers.CreateBasketTable(db)
 	controllers.CreateProductTable(db)
 	controllers.CreateBasketProductTable(db)
-
 	controllers.InitiateDB(db)
 
 	return db

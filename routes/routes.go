@@ -16,6 +16,8 @@ func Routes(router *gin.Engine) {
 	router.DELETE("/user/:userId", controllers.DeleteUser)
 	router.GET("/user/:userId", controllers.GetUsersAllBaskets)
 
+	router.GET("/user/1/:userId", controllers.GetUsersActiveBasket)
+
 	router.GET("/product", controllers.GetAllProducts)
 	router.POST("/product", controllers.CreateProduct)
 	router.GET("/product/:product_id", controllers.GetSingleProduct)
