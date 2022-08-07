@@ -30,9 +30,11 @@ func Connect() *pg.DB {
 	   	log.Printf("Schema created") */
 
 	//controllers.CreateUserTable(db)
-	controllers.CreateProductTable(db)
+	controllers.CreateUserTable(db)
 	controllers.CreateBasketTable(db)
+	controllers.CreateProductTable(db)
 	controllers.CreateBasketProductTable(db)
+
 	controllers.InitiateDB(db)
 
 	return db

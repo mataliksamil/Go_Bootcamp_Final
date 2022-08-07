@@ -12,10 +12,11 @@ import (
 )
 
 type User struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	LastName  string    `json:"last_name"`
-	Address   string    `json:"address"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
+
+	Baskets []*Basket `pg:"rel:has-many"`
+
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -23,7 +24,8 @@ type User struct {
 // Create User Table
 func CreateUserTable(db *pg.DB) error {
 	opts := &orm.CreateTableOptions{
-		IfNotExists: true,
+		FKConstraints: true,
+		IfNotExists:   true,
 	}
 	createError := db.Model(&User{}).CreateTable(opts)
 
@@ -60,14 +62,10 @@ func CreateUser(c *gin.Context) {
 	var user User
 	c.BindJSON(&user)
 	name := user.Name
-	last_name := user.LastName
-	address := user.Address
 	id := guuid.New().String()
 	_, insertError := dbConnect.Model(&User{
 		ID:        id,
 		Name:      name,
-		LastName:  last_name,
-		Address:   address,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}).Insert()
@@ -102,12 +100,12 @@ func GetSingleUser(c *gin.Context) {
 	}
 }
 
-func EditUser(c *gin.Context) {
+func EditUserName(c *gin.Context) {
 	userId := c.Param("userId")
 	var user User
 	c.BindJSON(&user)
-	address := user.Address
-	_, err := dbConnect.Model(&User{}).Set("address = ?", address).Where("id = ?", userId).Update()
+	name := user.Name
+	_, err := dbConnect.Model(&User{}).Set("name = ?", name).Where("id = ?", userId).Update()
 	if err != nil {
 		log.Printf("Error, Reason: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -141,4 +139,28 @@ func DeleteUser(c *gin.Context) {
 		"message": "User deleted successfully",
 	})
 
+}
+
+func GetUsersAllBaskets(c *gin.Context) {
+
+	userId := c.Param("userId")
+	user := &User{ID: userId}
+
+	err := dbConnect.Model(user).Relation("Baskets").Relation("Baskets.BasketProducts").Relation("Baskets.BasketProducts.Product").WherePK().Select()
+
+	//basket.BasketProducts[].Product
+
+	if err != nil {
+		log.Printf("Error while getting a single basket, Reason: %v\n", err)
+		c.JSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusNotFound,
+			"message": "Basket not found",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": "Single Baskeet",
+		"data":    user,
+	})
 }

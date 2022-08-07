@@ -9,11 +9,12 @@ import (
 
 func Routes(router *gin.Engine) {
 	router.GET("/", welcome)
-	/* router.GET("/user", controllers.GetAllUsers)
+	router.GET("/user", controllers.GetAllUsers)
 	router.POST("/user", controllers.CreateUser)
-	router.GET("/user/:userId", controllers.GetSingleUser)
-	router.PUT("/user/:userId", controllers.EditUser)
-	router.DELETE("/user/:userId", controllers.DeleteUser) */
+	//router.GET("/user/:userId", controllers.GetSingleUser)
+	router.PUT("/user/:userId", controllers.EditUserName)
+	router.DELETE("/user/:userId", controllers.DeleteUser)
+	router.GET("/user/:userId", controllers.GetUsersAllBaskets)
 
 	router.GET("/product", controllers.GetAllProducts)
 	router.POST("/product", controllers.CreateProduct)
@@ -30,6 +31,7 @@ func Routes(router *gin.Engine) {
 	router.DELETE("/basket/:basket_id", controllers.DeleteBasket)
 
 	router.POST("/basket_product", controllers.CreateBasketProduct)
+
 	//router.GET("/basket_product/:basket_id",controllers.GetBasketProductsByBasketId)
 
 }
