@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -9,17 +10,6 @@ import (
 	pg "github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
 )
-
-type Product struct {
-	ProductID    string  `pg:",pk" json:"product_id"`
-	ProductName  string  `pg:"uniqe" json:"product_name"`
-	ProductStock int     `json:"product_stock"`
-	Price        float64 `json:"price"`
-	VatRate      int     `json:"vat_rate"`
-
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
 
 // Create Product Table
 func CreateProductTable(db *pg.DB) error {
@@ -236,3 +226,27 @@ func getProductStock(product_id string) {
 
 }
 */
+
+func ChangeProductStock(product_id string, productDemand int) error {
+
+	product := &Product{ProductID: product_id}
+	err := dbConnect.Model(product).WherePK().Select()
+	if err != nil {
+		return err
+	} else {
+
+		productStock := product.ProductStock
+		// does any mutexLock kind of thing needed here ?
+		if productStock < productDemand { //
+			return errors.New(" no sufficient product ")
+		} else {
+			// product update by id
+			_, err := dbConnect.Model(&Product{}).Set("product_stock = ?", productStock-productDemand).Where("product_id = ?", product_id).Update()
+			if err != nil {
+				return err
+			}
+			log.Printf("Product Stock Edited Successfully")
+			return nil
+		}
+	}
+}

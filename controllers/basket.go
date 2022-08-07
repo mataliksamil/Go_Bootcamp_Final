@@ -11,21 +11,6 @@ import (
 	guuid "github.com/google/uuid"
 )
 
-type Basket struct {
-	BasketID string `pg:",pk" json:"basket_id"`
-
-	TotalCost    float64 `json:"total_cost"`
-	BasketStatus int     `json:"basket_status"`
-
-	BasketProducts []*BasketProduct `pg:"rel:has-many"`
-
-	UserID string `json:"user_id"`
-	User   *User  `pg:"rel:has-one"`
-
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
 // Create Basket Table
 func CreateBasketTable(db *pg.DB) error {
 	opts := &orm.CreateTableOptions{
@@ -98,12 +83,12 @@ func GetSingleBasket(c *gin.Context) {
 }
 
 // this func toggles basket status to 0
-// by this way  order becomes completed
+// by this way  order become completed
 func CompleteTheOrder(c *gin.Context) {
-	basket_id := c.Param("product_id")
+	basket_id := c.Param("basket_id")
 	var basket Basket
 	c.BindJSON(&basket)
-	basket_status := basket.BasketStatus
+	basket_status := 0
 	_, err := dbConnect.Model(&Basket{}).Set("basket_status = ?", basket_status).Where("basket_id = ?", basket_id).Update()
 	if err != nil {
 		log.Printf("Error, Reason: %v\n", err)

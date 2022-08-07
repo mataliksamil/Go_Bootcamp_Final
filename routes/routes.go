@@ -29,10 +29,10 @@ func Routes(router *gin.Engine) {
 	router.POST("/basket", controllers.CreateBasket)
 	router.GET("/basket/:basket_id", controllers.GetSingleBasket)
 	//router.GET("/basket/:basket_owner_id",controllers.CreateBasket)
-	router.PUT("/basket/:basket_id", controllers.EditBasketStatus)
+	router.PUT("/basket/:basket_id", controllers.CompleteTheOrder)
 	router.DELETE("/basket/:basket_id", controllers.DeleteBasket)
 
-	router.POST("/basket_product", controllers.CreateBasketProduct)
+	router.POST("/basket_product", controllers.AddProductToBasket)
 
 	//router.GET("/basket_product/:basket_id",controllers.GetBasketProductsByBasketId)
 
