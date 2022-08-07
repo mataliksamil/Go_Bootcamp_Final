@@ -5,7 +5,7 @@ import (
 	"os"
 
 	pg "github.com/go-pg/pg/v10"
-	"github.com/mataliksamil/Go_Bootcamp_Final/controllers"
+	controllers "github.com/mataliksamil/Go_Bootcamp_Final/controllers"
 )
 
 // Connecting to db

@@ -97,7 +97,9 @@ func GetSingleBasket(c *gin.Context) {
 	})
 }
 
-func EditBasketStatus(c *gin.Context) {
+// this func toggles basket status to 0
+// by this way  order becomes completed
+func CompleteTheOrder(c *gin.Context) {
 	basket_id := c.Param("product_id")
 	var basket Basket
 	c.BindJSON(&basket)
