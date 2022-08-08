@@ -64,15 +64,7 @@ func CreateProduct(c *gin.Context) {
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}).Insert()
-	/* insertError := dbConnect.Insert(&Product{
-		Product_ID:    product_id,
-		Product_Name:  product_name,
-		Product_Stock: product_stock,
-		Price:         price,
-		Vat_Rate:      vat_rate,
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
-	}) */
+
 	if insertError != nil {
 		log.Printf("Error while inserting new Product into db, Reason: %v\n", insertError)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -149,83 +141,6 @@ func DeleteProduct(c *gin.Context) {
 	})
 
 }
-
-/* func createNewPartition(db *pg.DB, currentTime time.Time) error {
-	firstOfMonth := time.Date(currentTime.Year(), currentTime.Month(), 1, 0, 0, 0, 0, time.UTC)
-	firstOfNextMonth := firstOfMonth.AddDate(0, 1, 0)
-
-	year := firstOfMonth.Format("2006")
-	month := firstOfMonth.Format("01")
-	sql := fmt.Sprintf(
-		`CREATE TABLE IF NOT EXISTS logs_y%s_m%s PARTITION OF logs FOR VALUES FROM ('%s') TO ('%s');`,
-		year, month,
-		firstOfMonth.Format(time.RFC3339Nano),
-		firstOfNextMonth.Format(time.RFC3339Nano),
-	)
-
-	_, err := db.Exec(sql)
-	return err
-}
-*/
-
-func ProductToBasket(c *gin.Context) {
-	/* 	product_id := c.Param("product_id")
-	   	basket_id := c.Param("basket_id")
-
-	   	product := new(Product)
-	   	c.BindJSON(&product)
-	   	quantity := product.Product_Stock
-	   	log.Printf("%#v", product)
-	   	basket_product := &BasketProduct{
-	   		Basket_ID:     basket_id,
-	   		Product_ID:    product_id,
-	   		Product_Count: quantity,
-	   	}
-
-	   	_, err := dbConnect.Model(basket_product).Insert()
-	   	if err != nil {
-	   		panic(err)
-	   	} */
-	/*
-		_, err = dbConnect.Model(&Product{}).Set("product_stock = ?", product_stock).Where("id = ?", product_id).Update()
-		if err != nil {
-			log.Printf("Error, Reason: %v\n", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"status":  500,
-				"message": "Something went wrong",
-			})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"status":  200,
-			"message": "Product Stock Edited Successfully",
-		})
-	*/
-}
-
-/*
-func getProductStock(product_id string) {
-
-	product_id := c.Param("product_id")
-	product := &Product{Product_ID: product_id}
-	err := dbConnect.Model(product).Query()
-	err := dbConnect.Model(product).WherePK()
-	if err != nil {
-		log.Printf("Error while getting a single product, Reason: %v\n", err)
-		c.JSON(http.StatusNotFound, gin.H{
-			"status":  http.StatusNotFound,
-			"message": "Todo not found",
-		})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"status":  http.StatusOK,
-		"message": "Single Product",
-		"data":    product,
-	})
-
-}
-*/
 
 func ChangeProductStock(product_id string, productDemand int) error {
 

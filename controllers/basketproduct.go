@@ -36,9 +36,9 @@ func AddProductToBasket(c *gin.Context) {
 	product_id := basketProduct.ProductID    //
 	basket_id := basketProduct.BasketID      //
 	product_count := basketProduct.ProductCount
-
+	var err error
 	// update product stock accordingly
-	err := ChangeProductStock(product_id, product_count)
+
 	if err != nil {
 		errString := fmt.Sprintf("Add to basket not allowed, Reason : %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -91,6 +91,29 @@ func AddProductToBasket(c *gin.Context) {
 	}
 }
 
+func DiscardBasketProduct(c *gin.Context) {
+	basketproduct_id := c.Param("basketproduct_id") // takes bp_id parameter
+	var basketProduct BasketProduct
+	c.BindJSON(&basketProduct)                   // json parser
+	discardedCount := basketProduct.ProductCount // product count will be deleted, from the json
+
+	prevCount, productID := PrevBPCount(basketproduct_id)
+	if prevCount < discardedCount {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  400,
+			"message": "There is not enough product in this basket",
+		})
+		return
+	}
+	_ = ChangeProductStock(productID, -discardedCount)
+	if prevCount == discardedCount {
+		DeleteBP(basketproduct_id, c)
+	} else {
+		UpdateBPCount(basketproduct_id, prevCount-discardedCount, c)
+	}
+
+}
+
 // returns "Basket Product ID" if duplicate
 func AddIfDuplicate(b_id string, p_id string) (string, int) {
 	basket := &Basket{BasketID: b_id}
@@ -105,4 +128,51 @@ func AddIfDuplicate(b_id string, p_id string) (string, int) {
 		}
 	}
 	return "", 0
+}
+
+func PrevBPCount(bp_id string) (int, string) { // returns the basketProducts current product count
+	basketProduct := &BasketProduct{BasketProductID: bp_id}
+	err := dbConnect.Model(basketProduct).WherePK().Select()
+	if err != nil {
+		log.Printf("Error while getting the Basket Product , Reason: %v\n", err)
+	}
+	return basketProduct.ProductCount, basketProduct.ProductID
+}
+
+func DeleteBP(bp_id string, c *gin.Context) {
+	basketproduct_id := c.Param("basketproduct_id") // takes bp_id parameter
+	myBasketProduct := &BasketProduct{BasketProductID: basketproduct_id}
+
+	_, err := dbConnect.Model(myBasketProduct).WherePK().Delete()
+	if err != nil {
+		log.Printf("Error, Reason: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  500,
+			"message": "Something went wrong",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  200,
+		"message": "BasketProduct Deleted Successfully",
+	})
+}
+
+func UpdateBPCount(bp_id string, product_count int, c *gin.Context) {
+	basketproduct_id := c.Param("basketproduct_id") // takes bp_id parameter
+	myBasketProduct := &BasketProduct{BasketProductID: basketproduct_id}
+
+	_, err := dbConnect.Model(myBasketProduct).Set("product_count = ?", product_count).WherePK().Update()
+	if err != nil {
+		log.Printf("Error, Reason: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  500,
+			"message": "Something went wrong",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  200,
+		"message": "BasketProduct Edited Successfully",
+	})
 }

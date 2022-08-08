@@ -33,9 +33,7 @@ func Routes(router *gin.Engine) {
 	router.DELETE("/basket/:basket_id", controllers.DeleteBasket)
 
 	router.POST("/basket_product", controllers.AddProductToBasket)
-
-	//router.GET("/basket_product/:basket_id",controllers.GetBasketProductsByBasketId)
-
+	router.PUT("/basket_product/:basketproduct_id", controllers.DiscardBasketProduct)
 }
 func welcome(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
