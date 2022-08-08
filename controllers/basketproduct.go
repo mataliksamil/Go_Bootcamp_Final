@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -39,13 +40,17 @@ func AddProductToBasket(c *gin.Context) {
 	// update product stock accordingly
 	err := ChangeProductStock(product_id, product_count)
 	if err != nil {
-		log.Printf("Add to basket failed, Reason: %v \n", err)
+		errString := fmt.Sprintf("Add to basket not allowed, Reason : %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusMethodNotAllowed,
+			"message": errString,
+		})
 		return
 	}
 	// returns existing "Basket Product ID" and "product count" of it  if duplicate
 	prevId, prevCount := AddIfDuplicate(basket_id, product_id)
 
-	if prevId != "" { // update product count in PB if already this product can be found in the basket
+	if prevId != "" { // update product count in Product Basket(PB) if already this product can be found in the basket
 		_, err := dbConnect.Model(&BasketProduct{}).Set("product_count = ?", product_count+prevCount).Where("basket_product_id = ?", prevId).Update()
 		if err != nil {
 			log.Printf("Error, Reason: %v\n", err)
