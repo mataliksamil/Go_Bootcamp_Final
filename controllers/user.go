@@ -95,7 +95,11 @@ func EditUserName(c *gin.Context) {
 	var user User
 	c.BindJSON(&user)
 	name := user.Name
-	_, err := dbConnect.Model(&User{}).Set("name = ?", name).Where("id = ?", userId).Update()
+	_, err := dbConnect.Model(&User{}).
+		Set("name = ?", name).
+		Where("id = ?", userId).
+		Update()
+
 	if err != nil {
 		log.Printf("Error, Reason: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -114,7 +118,10 @@ func EditUserName(c *gin.Context) {
 func DeleteUser(c *gin.Context) {
 	userId := c.Param("userId")
 	user := &User{ID: userId}
-	_, err := dbConnect.Model(user).WherePK().Delete()
+	_, err := dbConnect.Model(user).
+		WherePK().
+		Delete()
+
 	//err := dbConnect.Delete(user)
 	if err != nil {
 		log.Printf("Error while deleting a single user, Reason: %v\n", err)
@@ -135,8 +142,13 @@ func GetUsersAllBaskets(c *gin.Context) {
 
 	userId := c.Param("userId")
 	user := &User{ID: userId}
-
-	err := dbConnect.Model(user).Relation("Baskets").Relation("Baskets.BasketProducts").Relation("Baskets.BasketProducts.Product").WherePK().Select()
+	// JOIN for whole structure under a user
+	err := dbConnect.Model(user).
+		Relation("Baskets").
+		Relation("Baskets.BasketProducts").
+		Relation("Baskets.BasketProducts.Product").
+		WherePK().
+		Select()
 	//basket.BasketProducts[].Product
 	if err != nil {
 		log.Printf("Error while getting a user baskets, Reason: %v\n", err)
@@ -146,15 +158,53 @@ func GetUsersAllBaskets(c *gin.Context) {
 		})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": user,
+	})
 
 }
 
 func GetUsersActiveBasket(c *gin.Context) {
 
 	userId := c.Param("userId")
-	user := &User{ID: userId}
+	err := ApplyDiscount(userId)
+	if err != nil {
+		log.Printf("Error while Applying discounts, Reason: %v\n", err)
+		c.JSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusNotFound,
+			"message": "Baskets not found",
+		})
+		return
+	}
 
-	err := dbConnect.Model(user).Relation("Baskets").Relation("Baskets.BasketProducts").Relation("Baskets.BasketProducts.Product").WherePK().Select()
+	var myBasket = &Basket{}
+	err = dbConnect.Model(myBasket).Where("user_id=?", userId).Where("basket_status=?", 1).Select()
+	if err != nil {
+		log.Printf("Error while getting a user baskets, Reason: %v\n", err)
+		c.JSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusNotFound,
+			"message": "Baskets not found",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": "ACTIVE BASKET : ",
+		"data":    myBasket,
+	})
+}
+
+/*
+func Get4AllBaskets(c *gin.Context) {
+	userId := c.Param("userId")
+	baskets := &[]Basket{}
+	// JOIN for whole structure under a user
+	err := dbConnect.Model(baskets).
+		Where("user_id=?", userId).Order("updated_at DESC").
+		Limit(3).
+		Select()
+
 	//basket.BasketProducts[].Product
 	if err != nil {
 		log.Printf("Error while getting a user baskets, Reason: %v\n", err)
@@ -165,14 +215,10 @@ func GetUsersActiveBasket(c *gin.Context) {
 		return
 	}
 
-	nameString := "Active basket of :" + user.Name
-	for _, b := range user.Baskets {
-		if b.BasketStatus == 1 {
-			c.JSON(http.StatusOK, gin.H{
-				"status":  http.StatusOK,
-				"message": nameString,
-				"data":    b,
-			})
-		}
-	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": baskets,
+	})
+
 }
+*/

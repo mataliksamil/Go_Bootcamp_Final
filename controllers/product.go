@@ -106,7 +106,12 @@ func EditProductStock(c *gin.Context) {
 	var product Product
 	c.BindJSON(&product)
 	product_stock := product.ProductStock
-	_, err := dbConnect.Model(&Product{}).Set("product_stock = ?", product_stock).Where("id = ?", product_id).Update()
+
+	_, err := dbConnect.Model(&Product{}).
+		Set("product_stock = ?", product_stock).
+		Where("product_id = ?", product_id).
+		Update()
+
 	if err != nil {
 		log.Printf("Error, Reason: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -156,7 +161,11 @@ func ChangeProductStock(product_id string, productDemand int) error {
 			return errors.New(" no sufficient product ")
 		} else {
 			// product update by id
-			_, err := dbConnect.Model(&Product{}).Set("product_stock = ?", productStock-productDemand).Where("product_id = ?", product_id).Update()
+			_, err := dbConnect.Model(&Product{}).
+				Set("product_stock = ?", productStock-productDemand).
+				Set("updated_at = ?", time.Now()).
+				Where("product_id = ?", product_id).
+				Update()
 			if err != nil {
 				return err
 			}

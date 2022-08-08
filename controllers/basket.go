@@ -30,15 +30,17 @@ func CreateBasketTable(db *pg.DB) error {
 func CreateBasket(c *gin.Context) {
 	var basket Basket
 	c.BindJSON(&basket)
-
+	user_id := basket.UserID
 	basket_id := guuid.New().String() // 	// this will connect user logic
 	total_cost := 0.0                 //default value
-	basket_status := 1                // default value
-	user_id := basket.UserID
+	total_vat := 0.0
+	basket_status := 1 // default value
+
 	_, insertError := dbConnect.Model(&Basket{
 		BasketID:     basket_id,
 		UserID:       user_id,
 		TotalCost:    total_cost,
+		TotalVAT:     total_vat,
 		BasketStatus: basket_status,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
@@ -63,7 +65,10 @@ func GetSingleBasket(c *gin.Context) {
 	basketId := c.Param("basket_id")
 	basket := &Basket{BasketID: basketId}
 
-	err := dbConnect.Model(basket).Relation("BasketProducts").Relation("BasketProducts.Product").WherePK().Select()
+	err := dbConnect.Model(basket).
+		Relation("BasketProducts").
+		Relation("BasketProducts.Product").
+		WherePK().Select()
 
 	//basket.BasketProducts[].Product
 
@@ -81,6 +86,49 @@ func GetSingleBasket(c *gin.Context) {
 		"data":    basket,
 	})
 }
+func calculateTotalCost(user_id string) (float64, float64, error) {
+	totalCost := 0.0
+	totalVAT := 0.0
+	var myBasket = &Basket{}
+	err := dbConnect.Model(myBasket).
+		Relation("BasketProducts").
+		Relation("BasketProducts.Product").
+		Where("user_id=?", user_id).
+		Where("basket_status=?", 1).
+		Select()
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+	myBasketProduct := myBasket.BasketProducts
+	for _, myBP := range myBasketProduct {
+		totalCost += myBP.Product.Price * float64(myBP.ProductCount)
+		totalVAT += myBP.Product.Price * float64(myBP.ProductCount) * float64(myBP.Product.VatRate+100) / 100
+	}
+
+	err = dbConnect.Model(myBasket).
+		Set("total_vat =?", totalVAT).Set("total_cost =?", totalCost).
+		Where("user_id=?", user_id).
+		Where("basket_status=?", 1).
+		Select()
+	if err != nil {
+		return 0.0, 0.0, err
+	}
+	return totalCost, totalVAT, nil
+}
+
+func updateTotals(totalCost float64, totalVAT float64, user_id string) error {
+
+	var myBasket = &Basket{}
+	err := dbConnect.Model(myBasket).
+		Set("total_vat =?", totalVAT).Set("total_cost =?", totalCost).
+		Where("user_id=?", user_id).
+		Where("basket_status=?", 1).
+		Select()
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 // this func toggles basket status to 0
 // by this way  order become completed
@@ -89,7 +137,12 @@ func CompleteTheOrder(c *gin.Context) {
 	var basket Basket
 	c.BindJSON(&basket)
 	basket_status := 0
-	_, err := dbConnect.Model(&Basket{}).Set("basket_status = ?", basket_status).Where("basket_id = ?", basket_id).Update()
+
+	_, err := dbConnect.Model(&Basket{}).
+		Set("basket_status = ?", basket_status).
+		Set("updated_at=?", time.Now()).
+		Where("basket_id = ?", basket_id).Update()
+
 	if err != nil {
 		log.Printf("Error, Reason: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -102,10 +155,6 @@ func CompleteTheOrder(c *gin.Context) {
 		"status":  200,
 		"message": "Basket Status Edited Successfully",
 	})
-
-	// func activeBasketItems(basket)
-	// func
-
 }
 
 func DeleteBasket(c *gin.Context) {
