@@ -1,0 +1,172 @@
+{
+	"info": {
+		"_postman_id": "4f96a180-b021-460f-8ad4-ed8ce5f456cf",
+		"name": "REST-API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22599509"
+	},
+	"item": [
+		{
+			"name": "add user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n            \"Name\": \"name3\"\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/user/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"user",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add product",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{           \r\n            \"product_id\": \"4\",\r\n            \"product_name\": \"product 4\",\r\n            \"product_stock\": 5,\r\n            \"price\": 80.99,\r\n            \"vat_rate\": 18\r\n\r\n\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/product/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"product",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Basket",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user_id\" : \"e19a094d-a6aa-4370-af7c-d3c8839694f7\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/basket",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"basket"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add basket product",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"product_id\" : \"8\",\r\n\t\"basket_id\" : \"9c97a51b-7960-4d9f-9e98-e50eda4e71b7\",\r\n\t\"product_count\" : 15\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/basket_product",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"basket_product"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Users All Baskets",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/user/c4ff4dff-0276-4b6f-9292-6682ebcb38b8",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"user",
+						"c4ff4dff-0276-4b6f-9292-6682ebcb38b8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Show Active Basket",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Complete The Order",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
