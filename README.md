@@ -29,4 +29,4 @@ this decision which I made at the begining of my work, caused the structure to b
 - A postman request collection added to main directory
 Due to relations in db Requests can be followed as :
 
-- Add Products > Add User > Add Basket > Add products to basket > Show active basket > complete the order 
+- Add Products > Add User > Add Basket > Add products to basket > Show basket > complete the order 
