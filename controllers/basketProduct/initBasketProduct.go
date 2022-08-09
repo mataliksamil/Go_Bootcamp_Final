@@ -1,4 +1,4 @@
-package controllers
+package basketProduct
 
 import (
 	pg "github.com/go-pg/pg/v10"
@@ -6,6 +6,6 @@ import (
 
 var dbConnect *pg.DB
 
-func InitiateDB(db *pg.DB) {
+func InitialBasketProduct(db *pg.DB) {
 	dbConnect = db
 }

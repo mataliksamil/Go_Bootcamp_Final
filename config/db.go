@@ -5,7 +5,10 @@ import (
 	"os"
 
 	pg "github.com/go-pg/pg/v10"
-	controllers "github.com/mataliksamil/Go_Bootcamp_Final/controllers"
+	basket "github.com/mataliksamil/Go_Bootcamp_Final/controllers/basket"
+	basketProduct "github.com/mataliksamil/Go_Bootcamp_Final/controllers/basketProduct"
+	product "github.com/mataliksamil/Go_Bootcamp_Final/controllers/product"
+	user "github.com/mataliksamil/Go_Bootcamp_Final/controllers/user"
 )
 
 // Connecting to db
@@ -30,11 +33,10 @@ func Connect() *pg.DB {
 	   	log.Printf("Schema created") */
 
 	//controllers.CreateUserTable(db)
-	controllers.CreateUserTable(db)
-	controllers.CreateBasketTable(db)
-	controllers.CreateProductTable(db)
-	controllers.CreateBasketProductTable(db)
-	controllers.InitiateDB(db)
+	user.CreateUserTable(db)
+	basket.CreateBasketTable(db)
+	product.CreateProductTable(db)
+	basketProduct.CreateBasketProductTable(db)
 
 	return db
 }

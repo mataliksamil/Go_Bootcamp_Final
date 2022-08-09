@@ -10,7 +10,10 @@ import (
 )
 
 func main() {
-	config.Connect()
+	db := config.Connect()
+
+	config.InitiateDB(db)
+
 	// Init Router
 	router := gin.Default()
 	// Route Handlers / Endpoints

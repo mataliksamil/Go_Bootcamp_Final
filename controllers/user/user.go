@@ -1,4 +1,4 @@
-package controllers
+package user
 
 import (
 	"log"
@@ -9,6 +9,8 @@ import (
 	pg "github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
 	guuid "github.com/google/uuid"
+	basketController "github.com/mataliksamil/Go_Bootcamp_Final/controllers/basket"
+	entities "github.com/mataliksamil/Go_Bootcamp_Final/entities"
 )
 
 // Create User Table
@@ -17,7 +19,7 @@ func CreateUserTable(db *pg.DB) error {
 		FKConstraints: true,
 		IfNotExists:   true,
 	}
-	createError := db.Model(&User{}).CreateTable(opts)
+	createError := db.Model(&entities.User{}).CreateTable(opts)
 
 	//createError := db.CreateTable(&User{}, opts)
 	if createError != nil {
@@ -29,7 +31,7 @@ func CreateUserTable(db *pg.DB) error {
 }
 
 func GetAllUsers(c *gin.Context) {
-	var users []User
+	var users []entities.User
 
 	err := dbConnect.Model(&users).Select()
 	if err != nil {
@@ -49,11 +51,11 @@ func GetAllUsers(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
-	var user User
+	var user entities.User
 	c.BindJSON(&user)
 	name := user.Name
 	id := guuid.New().String()
-	_, insertError := dbConnect.Model(&User{
+	_, insertError := dbConnect.Model(&entities.User{
 		ID:        id,
 		Name:      name,
 		CreatedAt: time.Now(),
@@ -77,7 +79,7 @@ func CreateUser(c *gin.Context) {
 
 func GetSingleUser(c *gin.Context) {
 	userId := c.Param("userId")
-	user := &User{ID: userId}
+	user := &entities.User{ID: userId}
 	err := dbConnect.Model(user).WherePK().Select()
 	//err := dbConnect.Select(user)
 	if err != nil {
@@ -92,10 +94,10 @@ func GetSingleUser(c *gin.Context) {
 
 func EditUserName(c *gin.Context) {
 	userId := c.Param("userId")
-	var user User
+	var user entities.User
 	c.BindJSON(&user)
 	name := user.Name
-	_, err := dbConnect.Model(&User{}).
+	_, err := dbConnect.Model(&entities.User{}).
 		Set("name = ?", name).
 		Where("id = ?", userId).
 		Update()
@@ -117,7 +119,7 @@ func EditUserName(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	userId := c.Param("userId")
-	user := &User{ID: userId}
+	user := &entities.User{ID: userId}
 	_, err := dbConnect.Model(user).
 		WherePK().
 		Delete()
@@ -141,7 +143,7 @@ func DeleteUser(c *gin.Context) {
 func GetUsersAllBaskets(c *gin.Context) {
 
 	userId := c.Param("userId")
-	user := &User{ID: userId}
+	user := &entities.User{ID: userId}
 	// JOIN for whole structure under a user
 	err := dbConnect.Model(user).
 		Relation("Baskets").
@@ -168,7 +170,7 @@ func GetUsersAllBaskets(c *gin.Context) {
 func GetUsersActiveBasket(c *gin.Context) {
 
 	userId := c.Param("userId")
-	err := ApplyDiscount(userId)
+	err := basketController.ApplyDiscount(userId)
 	if err != nil {
 		log.Printf("Error while Applying discounts, Reason: %v\n", err)
 		c.JSON(http.StatusNotFound, gin.H{
@@ -178,7 +180,7 @@ func GetUsersActiveBasket(c *gin.Context) {
 		return
 	}
 
-	var myBasket = &Basket{}
+	var myBasket = &entities.Basket{}
 	err = dbConnect.Model(myBasket).Where("user_id=?", userId).Where("basket_status=?", 1).Select()
 	if err != nil {
 		log.Printf("Error while getting a user baskets, Reason: %v\n", err)
@@ -194,31 +196,3 @@ func GetUsersActiveBasket(c *gin.Context) {
 		"data":    myBasket,
 	})
 }
-
-/*
-func Get4AllBaskets(c *gin.Context) {
-	userId := c.Param("userId")
-	baskets := &[]Basket{}
-	// JOIN for whole structure under a user
-	err := dbConnect.Model(baskets).
-		Where("user_id=?", userId).Order("updated_at DESC").
-		Limit(3).
-		Select()
-
-	//basket.BasketProducts[].Product
-	if err != nil {
-		log.Printf("Error while getting a user baskets, Reason: %v\n", err)
-		c.JSON(http.StatusNotFound, gin.H{
-			"status":  http.StatusNotFound,
-			"message": "Baskets not found",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"status":  http.StatusOK,
-		"message": baskets,
-	})
-
-}
-*/

@@ -1,8 +1,10 @@
-package controllers
+package basket
 
 import (
 	"log"
 	"time"
+
+	entities "github.com/mataliksamil/Go_Bootcamp_Final/entities"
 )
 
 // checks every discount options updates TotalCost and TotalVATCost of the basket
@@ -51,7 +53,7 @@ func ApplyDiscount(user_id string) error {
 func returnIfAboveMonthly(user_id string) bool {
 	monthAgo := time.Now().AddDate(0, -1, 0)
 	monthlyCostVAT := 0.0
-	baskets := &[]Basket{}
+	baskets := &[]entities.Basket{}
 	err := dbConnect.Model(baskets).
 		Where("user_id=?", user_id).
 		Where("updated_at>?", monthAgo).
@@ -70,7 +72,7 @@ func returnIfAboveMonthly(user_id string) bool {
 }
 
 func returnIfFourthOrder(user_id string) bool {
-	baskets := &[]Basket{}
+	baskets := &[]entities.Basket{}
 	// JOIN for whole structure under a user
 	err := dbConnect.Model(baskets).
 		Where("user_id=?", user_id).Order("updated_at DESC").

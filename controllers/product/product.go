@@ -1,7 +1,6 @@
-package controllers
+package product
 
 import (
-	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -9,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	pg "github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
+	entities "github.com/mataliksamil/Go_Bootcamp_Final/entities"
 )
 
 // Create Product Table
@@ -18,7 +18,7 @@ func CreateProductTable(db *pg.DB) error {
 		IfNotExists:   true,
 	}
 
-	createError := db.Model(&Product{}).CreateTable(opts)
+	createError := db.Model(&entities.Product{}).CreateTable(opts)
 	if createError != nil {
 		log.Printf("Error while creating Product table, Reason: %v\n", createError)
 		return createError
@@ -28,7 +28,7 @@ func CreateProductTable(db *pg.DB) error {
 }
 
 func GetAllProducts(c *gin.Context) {
-	var products []Product
+	var products []entities.Product
 
 	err := dbConnect.Model(&products).Select()
 	if err != nil {
@@ -48,14 +48,14 @@ func GetAllProducts(c *gin.Context) {
 }
 
 func CreateProduct(c *gin.Context) {
-	var product Product
+	var product entities.Product
 	c.BindJSON(&product)
 	product_name := product.ProductName
 	product_id := product.ProductID
 	product_stock := product.ProductStock
 	price := product.Price
 	vat_rate := product.VatRate
-	_, insertError := dbConnect.Model(&Product{
+	_, insertError := dbConnect.Model(&entities.Product{
 		ProductID:    product_id,
 		ProductName:  product_name,
 		ProductStock: product_stock,
@@ -82,7 +82,7 @@ func CreateProduct(c *gin.Context) {
 
 func GetSingleProduct(c *gin.Context) {
 	product_id := c.Param("product_id")
-	product := &Product{ProductID: product_id}
+	product := &entities.Product{ProductID: product_id}
 
 	err := dbConnect.Model(product).WherePK().Select()
 	if err != nil {
@@ -103,11 +103,11 @@ func GetSingleProduct(c *gin.Context) {
 
 func EditProductStock(c *gin.Context) {
 	product_id := c.Param("product_id")
-	var product Product
+	var product entities.Product
 	c.BindJSON(&product)
 	product_stock := product.ProductStock
 
-	_, err := dbConnect.Model(&Product{}).
+	_, err := dbConnect.Model(&entities.Product{}).
 		Set("product_stock = ?", product_stock).
 		Where("product_id = ?", product_id).
 		Update()
@@ -129,7 +129,7 @@ func EditProductStock(c *gin.Context) {
 
 func DeleteProduct(c *gin.Context) {
 	product_id := c.Param("product_id")
-	product := &Product{ProductID: product_id}
+	product := &entities.Product{ProductID: product_id}
 	_, err := dbConnect.Model(product).WherePK().Delete()
 	//err := dbConnect.Delete(product)
 	if err != nil {
@@ -145,32 +145,4 @@ func DeleteProduct(c *gin.Context) {
 		"message": "Product deleted successfully",
 	})
 
-}
-
-func ChangeProductStock(product_id string, productDemand int) error {
-
-	product := &Product{ProductID: product_id}
-	err := dbConnect.Model(product).WherePK().Select()
-	if err != nil {
-		return err
-	} else {
-
-		productStock := product.ProductStock
-		// does any mutexLock kind of thing needed here ?
-		if productStock < productDemand { //
-			return errors.New(" no sufficient product ")
-		} else {
-			// product update by id
-			_, err := dbConnect.Model(&Product{}).
-				Set("product_stock = ?", productStock-productDemand).
-				Set("updated_at = ?", time.Now()).
-				Where("product_id = ?", product_id).
-				Update()
-			if err != nil {
-				return err
-			}
-			log.Printf("Product Stock Edited Successfully")
-			return nil
-		}
-	}
 }

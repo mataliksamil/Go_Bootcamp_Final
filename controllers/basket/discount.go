@@ -1,11 +1,15 @@
-package controllers
+package basket
+
+import (
+	entities "github.com/mataliksamil/Go_Bootcamp_Final/entities"
+)
 
 var GIVENAMOUNT float64 = 500
 var MOUNTHLYTOTAL float64 = 2000
 
 // Every fourth order whose total is more than given amount may have discount
 func Discount4thOrder(user_id string) (float64, float64, error) {
-	var myBasket = &Basket{}
+	var myBasket = &entities.Basket{}
 	err := dbConnect.Model(myBasket).
 		Relation("BasketProducts").
 		Relation("BasketProducts.Product").
@@ -34,7 +38,7 @@ func Discount4thOrder(user_id string) (float64, float64, error) {
 }
 
 func Discount4thItem(user_id string) (float64, float64, error) {
-	var myBasket = &Basket{}
+	var myBasket = &entities.Basket{}
 	err := dbConnect.Model(myBasket).
 		Relation("BasketProducts").
 		Relation("BasketProducts.Product").
